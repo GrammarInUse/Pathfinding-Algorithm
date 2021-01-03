@@ -31,6 +31,9 @@ try:
         tempX = int(f.read(1))
         tempY = int(f.read(1))
         LISTOFFUEL.append((tempX, tempY))
+    f.readline()
+    END_POINT_X = int(f.readline())
+    END_POINT_Y = int(f.readline())
     #PLAYER
     PLAYER_SIZE = 20
     CURR_POS_X = 0
@@ -46,14 +49,14 @@ try:
     CYAN = (255, 0, 255)
     ORANGE = (0, 255, 255)
     BROWN = (255, 128, 0)
+    PASSOVERCOLOr = (29, 29, 29)
     CELL_SIZE = 50
     #LOGIC GAME
     START_POINT_X = 0
     START_POINT_Y = 0
-    END_POINT_X = 9
-    END_POINT_Y = 9
     #AI MOVEMENT
     LISTOFDIRECTION = []
+    LISTOFROAD = []
     TARGET_X = 0
     TARGET_Y = 0
     #PLAYER INTERACTION
@@ -293,7 +296,10 @@ try:
             for j in range(m):
                 tempCell = Cells(False, WHITE, i, j, 1)
                 pygame.draw.rect(SCREEN, BLACK, (CELL_SIZE * i, CELL_SIZE * j, CELL_SIZE, CELL_SIZE))
-                if (i, j) in LISTOFFUEL:
+                if (i, j) in LISTOFROAD:
+                    pygame.draw.rect(SCREEN, PASSOVERCOLOr, (CELL_SIZE * i + 2, CELL_SIZE * j + 2, CELL_SIZE - 4, CELL_SIZE - 4))
+                    tempCell.Type = 1
+                elif (i, j) in LISTOFFUEL:
                     pygame.draw.rect(SCREEN, ORANGE, (CELL_SIZE * i + 2, CELL_SIZE * j + 2, CELL_SIZE - 4, CELL_SIZE - 4))
                     tempCell.Type = 3
                 elif (i, j) in LISTOFBLOCK:
@@ -339,6 +345,7 @@ try:
         return math.sqrt(math.pow(abs(_x2 - _x1), 2) + math.pow(abs(_y2 - _y1), 2))
     #MAIN
     if __name__ == "__main__":
+        LISTOFROAD = LISTOFDIRECTION.copy()
         #Display Screen and Logic Solution
         pygame.init()
         isRunning = True
@@ -401,6 +408,7 @@ try:
                         MyPlayer.CurPosY = 0
                         direction = 0
                         LISTOFDIRECTION.clear()
+                        LISTOFROAD.clear()
                     #INVOKE DFS
                     if MOUSE_CURRENT_POS_X >= len(MyMap.ListOfCells) * CELL_SIZE and MOUSE_CURRENT_POS_X <= len(MyMap.ListOfCells) * CELL_SIZE + 100 and MOUSE_CURRENT_POS_Y >= 51 and MOUSE_CURRENT_POS_Y <= 100:
                         tempStr = ""
@@ -412,6 +420,8 @@ try:
                         TARGET_Y = 0
                         MyPlayer.IsRun = False
                         MyPlayer.Fuel = 10000
+                        LISTOFROAD.clear()
+                        LISTOFROAD = MyMap.ListOfRoadDFS.copy()
                     #INVOKE BFS
                     if MOUSE_CURRENT_POS_X >= len(MyMap.ListOfCells) * CELL_SIZE and MOUSE_CURRENT_POS_X <= len(MyMap.ListOfCells) * CELL_SIZE + 100 and MOUSE_CURRENT_POS_Y >= 102 and MOUSE_CURRENT_POS_Y <= 153:
                         tempStr = ""
@@ -423,6 +433,8 @@ try:
                         TARGET_Y = 0
                         MyPlayer.IsRun = False
                         MyPlayer.Fuel = 10000
+                        LISTOFROAD.clear()
+                        LISTOFROAD = MyMap.ListOfRoadBFS.copy()
                     #INVOKE A*
                     if MOUSE_CURRENT_POS_X >= len(MyMap.ListOfCells) * CELL_SIZE and MOUSE_CURRENT_POS_X <= len(MyMap.ListOfCells) * CELL_SIZE + 100 and MOUSE_CURRENT_POS_Y >= 153 and MOUSE_CURRENT_POS_Y <= 204:
                         tempStr = ""
@@ -434,7 +446,9 @@ try:
                         TARGET_Y = 0
                         MyPlayer.IsRun = False
                         MyPlayer.Fuel = 10000
-                    #INVOKE A*
+                        LISTOFROAD.clear()
+                        LISTOFROAD = MyMap.ListOfRoadAStar.copy()
+                    #INVOKE UCS
                     if MOUSE_CURRENT_POS_X >= len(MyMap.ListOfCells) * CELL_SIZE and MOUSE_CURRENT_POS_X <= len(MyMap.ListOfCells) * CELL_SIZE + 100 and MOUSE_CURRENT_POS_Y >= 204 and MOUSE_CURRENT_POS_Y <= 255:
                         tempStr = ""
                         LISTOFDIRECTION.clear()
@@ -445,6 +459,8 @@ try:
                         TARGET_Y = 0
                         MyPlayer.IsRun = False
                         MyPlayer.Fuel = 10000
+                        LISTOFROAD.clear()
+                        LISTOFROAD = MyMap.ListOfRoadUCS.copy()
             #CHANGE TARGET POSITION
             if len(LISTOFDIRECTION) > 0 and not MyPlayer.IsRun:
                 TARGET_X, TARGET_Y = LISTOFDIRECTION.pop()
@@ -457,6 +473,7 @@ try:
                 elif TARGET_Y < round(MyPlayer.CurPosY):
                     direction = 8
                 MyPlayer.IsRun = True
+
             else:
                 pass
             if MyPlayer.CurPosX <= TARGET_X and direction == 6 and MyPlayer.Fuel > 0:
